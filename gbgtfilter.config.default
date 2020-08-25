@@ -1,0 +1,222 @@
+#format: sh
+#######################################################################
+#                                                                     #
+# Configuration for gbgtfilter
+#                                                                     #
+#######################################################################
+
+#
+#  If the MGICONFIG environment variable does not have a local override,
+#  use the default "live" settings.
+#
+if [ "${MGICONFIG}" = "" ]
+then
+    MGICONFIG=/usr/local/mgi/live/mgiconfig
+    export MGICONFIG
+fi
+
+# establish name of master config and source it
+CONFIG_MASTER=${MGICONFIG}/master.config.sh
+
+export CONFIG_MASTER
+
+. ${CONFIG_MASTER}
+
+#######################################################################
+## BEGIN shared Configuration                                         #
+#######################################################################
+# allow 1.5 initial and max heap memory - note this is the max for which
+# the loader will run since child processes (e.g. isql exec of sql files)
+# need memory from the parent process (2G max given to a process by the op sys)
+JAVARUNTIMEOPTS="-Xms1500m -Xmx1500m"
+
+JAVA_LIB=${MGI_JAVALIB}/core.jar:${MGI_JAVALIB}/dbsmgd.jar:${MGI_JAVALIB}/dbsrdr.jar:${MGI_JAVALIB}/dla.jar:${MGI_JAVALIB}/seqrecord.jar:${MGI_JAVALIB}/seqfilter.jar:${JGETOPT}
+
+CLASSPATH=.:${GBGTFILTER}/gbgtfilter.jar:${JAVA_LIB}:${COMMON_CLASSPATH}
+
+export JAVARUNTIMEOPTS JAVA_LIB CLASSPATH
+
+#  The name of the load for the subject of an email notification
+MAIL_LOADNAME="GenBank Gene Trap Filter"
+
+# filter mode, either 'add' or 'reload'
+# 'add' skips and report sequences which already have coordinates
+# when creating the FASTA version of the file
+# 'reload' ignores the fact there are coordinates in the database
+FILTER_MODE=add
+
+#  Recipient list for mailing the curation log file (comma-separated)
+MAIL_LOG_CUR="mgiadmin"
+
+# MGI_User for this process. Used to register the jobstream
+# and to to get the set of files to process
+JOBSTREAM=gbgtfilter
+
+export MAIL_LOADNAME FILTER_MODE MAIL_LOG_CUR JOBSTREAM
+
+# coordinate map collection to determine if a gene trap sequence
+# already has a coordinate in the database
+COORD_COLLECTION_NAME="dbGSS Gene Trap"
+
+export COORD_COLLECTION_NAME
+
+#
+# output file settings - general
+#
+
+# Full path the the logs, reports, and archive directories
+FILEDIR=${DATALOADSOUTPUT}/genbank/gbgtfilter
+LOGDIR=${FILEDIR}/logs
+RPTDIR=${FILEDIR}/reports
+OUTPUTDIR=${FILEDIR}/output
+ARCHIVEDIR=${FILEDIR}/archive
+
+export FILEDIR LOGDIR RPTDIR OUTPUTDIR ARCHIVEDIR 
+
+# data download directory
+DOWNLOADDIR=${DATADOWNLOADS}/ftp.ncbi.nih.gov/gbgtfilter/output
+# file counter
+FILECOUNTER=${DOWNLOADDIR}/fileCounter
+
+# java load expects to find *_OUTFILE_NAME configured
+# writes all gene trap sequences to this file
+ALL_OUTFILE_NAME=${OUTPUTDIR}/gbgtfilter_all.seq
+
+# writes only those sequences representing new gene traps to this file
+NEW_OUTFILE_NAME=${OUTPUTDIR}/gbgtfilter_new.seq
+
+# FASTA file - this is NEW_OUTFILE_NAME fasta formatted
+FASTAFILE_NAME=${OUTPUTDIR}/gbgtfilter_new.fasta
+
+export DOWNLOADDIR FILECOUNTER ALL_OUTFILE_NAME NEW_OUTFILE_NAME FASTAFILE_NAME
+
+#  Complete path name of the log files
+LOG_PROC=${LOGDIR}/gbgtfilter.proc.log
+LOG_DIAG=${LOGDIR}/gbgtfilter.diag.log
+LOG_CUR=${LOGDIR}/gbgtfilter.cur.log
+LOG_VAL=${LOGDIR}/gbgtfilter.val.log
+
+export LOG_PROC LOG_DIAG LOG_CUR LOG_VAL
+
+#######################################################################
+## END shared Configuration                                         #
+#######################################################################
+
+########################################################################
+# BEGIN Configuration for java app
+########################################################################
+# Send debug messages to the diagnostic log
+# toggle these to true as needed
+LOG_DEBUG=false
+DBDEBUG=false
+CACHE_DEBUG=false
+
+# logger factory class - allows classes to get their own loggers
+LOG_FACTORY=org.jax.mgi.shr.dla.log.DLALoggerFactory
+
+export LOG_DEBUG DBDEBUG CACHE_DEBUG LOG_FACTORY
+
+#
+# input file settings 
+#
+
+#  Frameworks expects the value 'STDIN' if jobstream script pipes input to
+#  the application.
+INFILE_NAME=STDIN
+
+# how files are piped to the application
+APP_CAT_METHOD="/usr/local/bin/gunzip -c"
+
+export INFILE_NAME APP_CAT_METHOD
+
+# full path to input file directory when APP_RADAR_INPUT=false
+INPUTDIR=${DATADOWNLOADS}/...
+
+# full path to one or more input files when APP_RADAR_INPUT=false
+APP_INFILES=${INPUTDIR}/...
+
+# get input files from RADAR if 'true' 
+APP_RADAR_INPUT=true
+
+export INPUTDIR APP_INFILES APP_RADAR_INPUT
+
+# GenBank sequence record String start delimiter
+# there 7 spaces after LOCUS
+INFILE_BEGIN_DELIMITER="LOCUS       "
+
+# GenBank sequence record String end delimiter not including sequence
+INFILE_END_DELIMITER=\nORIGIN
+
+# true = regex matching for finding record delim is turned on
+INFILE_USE_REGEX=false
+
+export INFILE_BEGIN_DELIMITER INFILE_END_DELIMITER INFILE_USE_REGEX
+
+# buffersize in bytes used by nio.ByteBuffer
+# 21,000,000 = ~20 MB
+INFILE_BUFFERSIZE=21000000
+
+export INFILE_BUFFERSIZE 
+
+
+###############################
+# Required by frameworks
+###############################
+
+# Provider name
+SEQ_PROVIDER=GenBank
+
+# logical db name for this data provider
+SEQ_LOGICALDB="Sequence DB"
+
+export SEQ_PROVIDER SEQ_LOGICALDB
+
+##################
+# RADAR files
+##################
+
+# job stream of genbank sequence load
+APP_JOBSTREAM=genbank_load
+
+# job stream of genbank gene trap filter load
+APP_JOBSTREAM2=gbgtfilter
+
+# file type of the genbank load
+APP_FILETYPE1=GenBank
+
+# file type of the genbank gene trap filter
+APP_FILETYPE2=GenBank_GTFilter
+
+# file type of the genbank gene trap load
+APP_FILETYPE3=GenBank_GTLoad
+
+# file type of the genbank gene trap blat load (fasta)
+APP_FILETYPE4=GenBank_GTBlat
+
+# how files are moved from genbank to fasta
+GB2FASTA=/usr/local/wu-blast2.0/gb2fasta
+
+export APP_JOBSTREAM APP_JOBSTREAM2 APP_FILETYPE1 APP_FILETYPE2 APP_FILETYPE3 APP_FILETYPE4 GB2FASTA
+
+# full path to DBCleanser app
+DBCLEANSER_APP=${DLA_UTILS}/DBCleanser
+
+# full path to the DBCleanser log
+DBCLEANSER_LOG=${LOGDIR}/DBCleanser.log
+
+# DBCleanser write to the inputFilename${OUTPUTFILE_EXT}
+OUTPUTFILE_EXT=.non_redundant
+
+# where to create the duplicate sequence file
+DUP_SEQ_FILE=${OUTPUTDIR}/dupseqs
+
+export DBCLEANSER_APP DBCLEANSER_LOG OUTPUTFILE_EXT DUP_SEQ_FILE
+
+########################################################################
+# END Configuration for java filter 
+########################################################################
+
+#  Installation directory for the GenBank Gene Trap Processor
+INSTALLDIR=${GBGTFILTER}
+
+export INSTALLDIR

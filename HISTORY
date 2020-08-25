@@ -1,0 +1,111 @@
+TAG: gbgtfilter-5-2-1-1
+DATE: 03/11/2015
+STAFF: dbm
+CHANGES:
+1) gbgtfilter.sh: Remove \n from echo statements
+
+TAG: gbgtfilter-5-1-5-2
+DATE: 10/08/2013
+STAFF: dbm
+CHANGES:
+1) gbgtfilter.sh: Use NS_DATA_LOADS namespace
+
+TAG: gbgtfilter-5-1-5-1
+DATE: 09/25/2013
+STAFF: dbm
+CHANGES:
+1) gbgtfilter.sh: Override default timeout to 16 hours when waiting for the
+                  GB SeqLoad to finish
+
+TAG: gbgtfilter-4-4-1-0
+DATE: 05/23/2011
+STAFF: sc
+CHANGES: set gbgtfilter done flag when no files found to process
+
+TAG: gbgtfilter-4-4-0-2
+DATE: 09/10/2010
+STAFF: sc
+CHANGES: Since looking for Contact: in entire record, catching 
+EGTC raw contact which we don't want - fix for this.
+
+TAG: gbgtfilter-4-4-0-1
+DATE: 09/07/2010
+STAFF: sc
+CHANGES: Added suppport for identifying Ishida gene traps
+    this includes regex against the entire record instead of against just the
+    comment. Also, Ishida doesn't include 'Class: Gene Trap' so have to use 
+    the raw contact to determine if it is a gene trap
+
+TAG: gbgtfilter-4-3-5-1
+DATE: 08/03/2010
+STAFF: sc
+CHANGES: TR9796 Process control change
+1) gbgtfilter.sh - updated process control so we may
+   run this independent of gtblatpipeline
+
+TAG: gbgtfilter-4-3-1-1
+DATE: 11/02/2009
+STAFF: sc
+CHANGES: update to regex
+From: "Class: ([\\s\\S]*?)\\.";
+To: "Class: ([\\s\\S]*?)[\\.\\n";
+because there are a few cases where  the Class does not end in '.'
+
+TAG: gbgtfilter-4-3-0-4
+DATE: 04/24/2009
+STAFF: sc
+CHANGES: TR7493
+1) gbgtfilter.sh - fixed return of non-zero exit code when no files
+   to process
+
+TAG: gbgtfilter-4-3-0-3
+TAG: gbgtfilter-4-3-0-2
+DATE: 04/24/2009
+STAFF: sc
+CHANGES: TR7493
+1) GBGeneTrapFilter.java - don't report new sequences when in
+   delete reload mode
+
+TAG: gbgtfilter-4-3-0-1
+DATE: 04/24/2009
+STAFF: sc
+CHANGES: TR7493
+1) gbgtfilter.config.default - add FILTER_MODE
+2) GBGeneTrapFilter.java - add checking for FILTER_MODE
+   if 'add' filters out sequences that already have coords
+   in the database
+3) GBGeneTrapFilterCfg.java - add getFilterMode method
+4) gbgtfilter.sh - fixed the moving of output files to 
+   downloads directory
+
+TAG: gbgtfilter-4-2-0-6
+DATE: 03/12/2009
+STAFF: sc
+CHANGES: TR7493/Gene Trap Less Filling
+1) gtgtfilter.config - ADDED to support creation of FASTA file which
+   includes only sequences without coordinates in the database
+	COORD_COLLECTION_NAME
+	ALL_OUTFILE_NAME
+	NEW_OUTFILE_NAME
+2) ./bin/gbgtfilter.sh 
+ a) updated to use  ALL_OUTFILE_NAME and NEW_OUTFILE_NAME
+ b) corrected config file param to DBCleanser - was being passed seqdb_engine
+    config file
+ c) GBGeneTrapFilter.java - updated to create NEW_OUTFILE_NAME and write
+    seqids not in NEW_OUTFILE_NAME (coords already in database) to cur log
+ d) GBGeneTrapFilterCfg.java - added methods to get NEW_OUTFILE_NAME and 
+    COORD_COLLECTION_NAME
+
+TAG: gbgtfilter-4-2-0-5
+TAG: gbgtfilter-4-2-0-4
+TAG: gbgtfilter-4-2-0-3
+DATE: 02/10/2009
+DATE: 02/04/2009
+STAFF: lec
+CHANGES: TR7493/Gene Trap Less Filling
+
+TAG: gbgtfilter-4-2-0-2
+TAG: gbgtfilter-4-2-0-1
+DATE: 01/22/2009
+STAFF: sc
+CHANGES: TR7493 - Gene Trap Less Filling
